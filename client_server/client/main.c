@@ -87,6 +87,8 @@ int main(int argc, char *argv[])
 
   printf("client: received '%s'\n",buf);
 
+  send(sockfd, "hello socket!!!", strlen("hello socket!!!"), 0);
+
   close(sockfd);
 
   return 0;
