@@ -129,7 +129,7 @@ int main(void)
           }
         } else {
           // handle data from a client
-          if ((nbytes = recv(i, buf, sizeof buf, 0)) <= 0) {
+          if ((nbytes = recv(i, buf, sizeof(buf)-1, 0)) <= 0) {
             // got error or connection closed by client
             if (nbytes == 0) {
               // connection closed
@@ -140,13 +140,13 @@ int main(void)
             close(i); // bye!
             FD_CLR(i, &master); // remove from master set
           } else {
-            // we got some data from a client
+            buf[nbytes] = '\0';
             for(j = 0; j <= fdmax; j++) {
               // send to everyone!
               if (FD_ISSET(j, &master)) {
                 // except the listener and ourselves
                 if (j != listener && j != i) {
-                  if (send(j, buf, nbytes, 0) == -1) {
+                  if (send(j, buf, nbytes+1, 0) == -1) {
                     perror("send");
                   }
                 }
