@@ -24,10 +24,22 @@ void *get_in_addr(struct sockaddr *sa)
   return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
 
+int sendall(int sockfd, char *buf, int *len)
+{
+  int total = 0;
+  int n = 0;
+  while(total < *len) {
+    n = send(sockfd, buf+total, *len-total, 0);
+    if(n == -1) { break; }
+    total += n;
+  }
+  *len = total;
+  return n == -1 ? -1 : 0;
+}
 
 int main(int argc, char *argv[])
 {
-  int rv, sockfd, i, read, j;
+  int rv, sockfd, i, read, j, ret;
   int fdmax = STDIN_FILENO;
   fd_set master;
   fd_set read_fds;
@@ -89,7 +101,10 @@ int main(int argc, char *argv[])
             perror("getline");
             exit(1);
           }
-          send(sockfd, ln, lnsize, 0);
+          if((ret = sendall(sockfd, ln, (int *)&lnsize)) == -1) {
+            perror("send");
+            exit(1);
+          }
         } else {
           if((read = recv(i, buf, sizeof(buf)-1, 0)) <= 0) {
             if(read == 0) {
